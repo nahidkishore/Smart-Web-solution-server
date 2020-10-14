@@ -17,6 +17,7 @@ app.use(cors());
 /* app.use(express.static("services")); */
 app.use(fileUpload());
 
+// default / root
 app.get("/", function (req, res) {
   res.send("Creative agency working !");
 });
@@ -24,10 +25,11 @@ app.get("/", function (req, res) {
 const client = new MongoClient(uri, { useNewUrlParser: true,useUnifiedTopology: true, });
 client.connect(err => {
   const serviceCollection = client.db(process.env.DB_NAME).collection("services");
-  
+  const feedbackCollection=client.db(process.env.DB_NAME).collection("UserReviews");
+  const orderCollection=client.db(process.env.DB_NAME).collection("UserOrders");
 
 // create and add new service part
-   //add services
+
    app.post('/addServices', (req, res) => {
     const file = req.files.file;
    /*  const fileType = file.mimetype; */
@@ -64,7 +66,76 @@ app.get('/services',(req,res) =>{
   })
 })
 
- 
+//User feedback load to  database
+app.post("/addFeedback", (req, res) => {
+  const feedback = req.body;
+  console.log(feedback);
+  feedbackCollection.insertOne(feedback)
+   .then((result) => {
+     console.log(result);
+    res.send(result);
+  });
+});
+
+
+
+app.get('/feedback',(req,res) =>{
+  feedbackCollection.find({})
+  .toArray((err,documents)=>{
+    res.send(documents)
+    if(err){
+      console.log(err)
+    }
+  })
+})
+
+
+/* app.post('/addOrder', (req, res) => {
+  const event = req.body;
+  orderCollection.insertOne(event)
+      .then(result => {
+          console.log(result)
+          res.send(result)
+      })
+}) */
+
+// get order 
+
+/* app.get("/order", (req, res) => {
+  const email = req.body.email;
+  orderCollection.find({email: email})
+  .toArray((err, documents) => {
+    res.send(documents);
+  });
+}); */
+ //add order 
+app.post('/addOrder',(req, res)=>{
+  const orderData=req.body;
+  const projectFile=req.files.projectFile;
+  const FileDta=projectFile.data;
+  const encFile=FileDta.toString('base64');
+  const convertedFile={ 
+    contentType:projectFile.mimetype,
+    size:parseFloat(projectFile.size),
+    img:Buffer.from(encFile, 'base64')
+  }
+  const FinalData = { service: orderData.service, orderDescription: orderData.orderDescription, name: orderData.name, email: orderData.email, price: orderData.price, projectFile: convertedFile, thumbnailType: orderData.thumbnailType, thumbnailImg: orderData.thumbnailImg, serviceDescription: orderData.serviceDescription, state: false };
+
+  orderCollection.insertOne(FinalData)
+            .then(result => {
+                if (result.success) {
+                    res.sendStatus(200);
+                    console.log('Posted Successfully')
+                }
+            })
+            .catch(err => console.log(err))
+
+}) 
+
+
+
+
+
 });
 
 app.listen(process.env.PORT || port);
