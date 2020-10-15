@@ -22,10 +22,7 @@ app.get("/", function (req, res) {
   res.send("Creative agency working !");
 });
 
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const client = new MongoClient(uri, {useNewUrlParser: true,useUnifiedTopology: true,});
 client.connect((err) => {
 
   const serviceCollection = client.db(process.env.DB_NAME).collection("services");
@@ -74,7 +71,8 @@ client.connect((err) => {
 
   //User feedback load to  database
   app.post("/addFeedback", (req, res) => {
-    const feedback = req.body;
+  const feedback = req.body
+
     console.log(feedback);
     feedbackCollection.insertOne(feedback).then((result) => {
       console.log(result);
@@ -83,7 +81,8 @@ client.connect((err) => {
   });
 
   app.get("/feedback", (req, res) => {
-    feedbackCollection.find({}).toArray((err, documents) => {
+    feedbackCollection.find({}).limit(6)
+    .toArray((err, documents) => {
       res.send(documents);
       if (err) {
         console.log(err);
