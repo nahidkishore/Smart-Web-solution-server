@@ -148,7 +148,7 @@ client.connect((err) => {
         .catch(err => console.log(err))
 });;
 
-app.get('/isAdmin', (req, res) => {
+app.post('/isAdmin', (req, res) => {
   const email = req.body.email;
   AddAdminCollection.find({ email: email })
     .toArray((error, admins) => {
