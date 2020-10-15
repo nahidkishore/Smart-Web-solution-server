@@ -27,13 +27,12 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 });
 client.connect((err) => {
-  const serviceCollection = client
-    .db(process.env.DB_NAME)
-    .collection("services");
-  const feedbackCollection = client
-    .db(process.env.DB_NAME)
-    .collection("UserReviews");
+
+  const serviceCollection = client.db(process.env.DB_NAME).collection("services");
+  const feedbackCollection = client.db(process.env.DB_NAME).collection("UserReviews");
   const OrderCollection = client.db(process.env.DB_NAME).collection("orders");
+  const AddAdminCollection=client.db(process.env.DB_NAME).collection("admins");
+
 
   // create and add new service part
 
@@ -122,18 +121,45 @@ client.connect((err) => {
   });
 
   app.get("/orders", (req, res) => {
-    OrderCollection.find({}).toArray((error, documents) => {
+    OrderCollection.find({})
+    .toArray((error, documents) => {
       res.send(documents);
     });
   });
 
   app.get("/orderedList", (req, res) => {
-    OrderCollection.find({ email: req.query.email }).toArray(
+    OrderCollection.find({ email: req.query.email })
+    .toArray(
       (error, documents) => {
         res.send(documents);
       }
     );
   });
+//admin added 
+
+   //add admins
+   app.post('/addAdmin', (req, res) => {
+    const admin = req.body;
+    AddAdminCollection.insertOne(admin)
+        .then(result => {
+            if (result.insertedCount > 0) {
+                res.sendStatus(200);
+            }
+        })
+        .catch(err => console.log(err))
+});;
+
+app.post('/isAdmin', (req, res) => {
+  const email = req.body.email;
+  AddAdminCollection.find({ email: email })
+    .toArray((error, admins) => {
+      res.send(admins.length > 0)
+    })
+});
+
+
+
+
 });
 
 app.listen(process.env.PORT || port);
