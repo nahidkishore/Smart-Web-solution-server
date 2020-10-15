@@ -64,7 +64,8 @@ client.connect((err) => {
 
   //service data
   app.get("/services", (req, res) => {
-    serviceCollection.find({}).toArray((err, documents) => {
+    serviceCollection.find({}).limit(6)
+    .toArray((err, documents) => {
       res.send(documents);
     });
   });
