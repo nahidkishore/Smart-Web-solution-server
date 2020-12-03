@@ -23,14 +23,21 @@ app.get("/", function (req, res) {
   res.send("Creative agency working !");
 });
 
-const client = new MongoClient(uri, {useNewUrlParser: true,useUnifiedTopology: true,});
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 client.connect((err) => {
-
-  const serviceCollection = client.db(process.env.DB_NAME).collection("services");
-  const feedbackCollection = client.db(process.env.DB_NAME).collection("UserReviews");
+  const serviceCollection = client
+    .db(process.env.DB_NAME)
+    .collection("services");
+  const feedbackCollection = client
+    .db(process.env.DB_NAME)
+    .collection("UserReviews");
   const OrderCollection = client.db(process.env.DB_NAME).collection("orders");
-  const AddAdminCollection=client.db(process.env.DB_NAME).collection("admins");
-
+  const AddAdminCollection = client
+    .db(process.env.DB_NAME)
+    .collection("admins");
 
   // create and add new service part
 
@@ -65,15 +72,17 @@ client.connect((err) => {
 
   //service data
   app.get("/services", (req, res) => {
-    serviceCollection.find({}).limit(6)
-    .toArray((err, documents) => {
-      res.send(documents);
-    });
+    serviceCollection
+      .find({})
+      .limit(6)
+      .toArray((err, documents) => {
+        res.send(documents);
+      });
   });
 
   //User feedback load to  database
   app.post("/addFeedback", (req, res) => {
-  const feedback = req.body
+    const feedback = req.body;
 
     console.log(feedback);
     feedbackCollection.insertOne(feedback).then((result) => {
@@ -83,13 +92,15 @@ client.connect((err) => {
   });
 
   app.get("/feedback", (req, res) => {
-    feedbackCollection.find({}).limit(6)
-    .toArray((err, documents) => {
-      res.send(documents);
-      if (err) {
-        console.log(err);
-      }
-    });
+    feedbackCollection
+      .find({})
+      .limit(6)
+      .toArray((err, documents) => {
+        res.send(documents);
+        if (err) {
+          console.log(err);
+        }
+      });
   });
 
   //
@@ -122,56 +133,49 @@ client.connect((err) => {
   });
 
   app.get("/orders", (req, res) => {
-    OrderCollection.find({})
-    .toArray((error, documents) => {
+    OrderCollection.find({}).toArray((error, documents) => {
       res.send(documents);
     });
   });
 
   app.get("/orderedList", (req, res) => {
-    OrderCollection.find({ email: req.query.email })
-    .toArray(
+    OrderCollection.find({ email: req.query.email }).toArray(
       (error, documents) => {
         res.send(documents);
       }
     );
   });
-//admin added 
+  //admin added
 
-   //add admins
-   app.post('/addAdmin', (req, res) => {
+  //add admins
+  app.post("/addAdmin", (req, res) => {
     const admin = req.body;
     AddAdminCollection.insertOne(admin)
-        .then(result => {
-            if (result.insertedCount > 0) {
-                res.sendStatus(200);
-            }
-        })
-        .catch(err => console.log(err))
-});;
+      .then((result) => {
+        if (result.insertedCount > 0) {
+          res.sendStatus(200);
+        }
+      })
+      .catch((err) => console.log(err));
+  });
 
-app.post('/isAdmin', (req, res) => {
-  const email = req.body.email;
-  AddAdminCollection.find({ email: email })
-    .toArray((error, admins) => {
-      res.send(admins.length > 0)
-    })
-});
+  app.post("/isAdmin", (req, res) => {
+    const email = req.body.email;
+    AddAdminCollection.find({ email: email }).toArray((error, admins) => {
+      res.send(admins.length > 0);
+    });
+  });
 
+  //status update
 
-//status update
+  app.patch("/updateStatus/:id", (req, res) => {
+    const id = req.params.id;
+    OrderCollection.updateOne(
+      { _id: ObjectId(id) },
 
-app.patch('/updateStatus/:id',(req, res)=>{
-  const id = req.params.id
-  OrderCollection.updateOne({_id:ObjectId(id)},
-  
-  {$set:{status:req.body.value},
-
-})
-.then(result=>res.send(result.modifiedCount>0))
-})
-
-
+      { $set: { status: req.body.value } }
+    ).then((result) => res.send(result.modifiedCount > 0));
+  });
 });
 
 app.listen(process.env.PORT || port);
