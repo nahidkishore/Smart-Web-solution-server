@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs-extra");
 const fileUpload = require("express-fileupload");
+const { ObjectId } = require("mongodb");
 const MongoClient = require("mongodb").MongoClient;
 require("dotenv").config();
 
@@ -158,6 +159,17 @@ app.post('/isAdmin', (req, res) => {
 });
 
 
+//status update
+
+app.patch('/updateStatus/:id',(req, res)=>{
+  const id = req.params.id
+  OrderCollection.updateOne({_id:ObjectId(id)},
+  
+  {$set:{status:req.body.value},
+
+})
+.then(result=>res.send(result.modifiedCount>0))
+})
 
 
 });
