@@ -94,14 +94,13 @@ client.connect((err) => {
   app.get("/feedback", (req, res) => {
     feedbackCollection
       .find({})
-      .limit(6)
       .toArray((err, documents) => {
         res.send(documents);
         if (err) {
           console.log(err);
         }
       });
-  });
+  });  // /* .limit(6) */ 
 
   //
   //add orders by customer
